@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from auth import login as api_login
 
 
 def login():
@@ -12,7 +13,7 @@ def login():
 
     username_label = tk.Label(
         login_window,
-        text="Username"
+        text="Phone"
     )
     username_label.pack(pady=5)
 
@@ -37,16 +38,37 @@ def login():
 
     def submit_login():
 
-        username = username_entry.get()
+        phone = username_entry.get()
         password = password_entry.get()
 
-        print("Username:", username)
-        print("Password:", password)
 
-        messagebox.showinfo(
-            "Login",
-            "Login button working"
-        )
+        try:
+            response = api_login(phone, password)
+
+
+            if response.status_code == 200:
+
+                messagebox.showinfo(
+                    "Login",
+                    "Login Successful"
+                )
+
+            else:
+                print(response.status_code)
+                print(response.text)
+
+                messagebox.showerror(
+                    "Login Failed",
+                    response.text
+                )
+
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                str(e)
+            )
 
 
     submit_button = tk.Button(
@@ -74,6 +96,7 @@ title = tk.Label(
 title.pack(pady=20)
 
 
+
 login_button = tk.Button(
     window,
     text="Login",
@@ -83,6 +106,7 @@ login_button = tk.Button(
 )
 
 login_button.pack(pady=10)
+
 
 
 window.mainloop()

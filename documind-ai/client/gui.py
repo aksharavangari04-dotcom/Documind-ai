@@ -67,14 +67,6 @@ def open_search():
         height=2
     ).pack()
 
-def open_view_document():
-
-    view_window = tk.Toplevel(window)
-
-    view_window.title("View Document")
-    view_window.geometry("650x500")
-    view_window.configure(bg="#0F172A")
-
 def open_categories():
 
     category_window = tk.Toplevel(window)
@@ -114,6 +106,86 @@ def open_categories():
             f"• {category}\n"
         )
     text_box.config(state="disabled")
+
+
+def open_view():
+
+    view_window = tk.Toplevel(window)
+
+    view_window.title("View Document")
+    view_window.geometry("700x700")
+    view_window.configure(bg="#0F172A")
+
+    title = tk.Label(
+        view_window,
+        text="View First Document",
+        font=("Arial", 20, "bold"),
+        bg="#0F172A",
+        fg="white"
+    )
+    title.pack(pady=20)
+    
+    tk.Label(
+        view_window,
+        text="Enter Document ID",
+        font=("Arial", 11),
+        bg="#0F172A",
+        fg="white"
+    ).pack()
+
+    id_entry = tk.Entry(
+        view_window,
+        width=20,
+        font=("Arial", 12)
+    )
+    id_entry.pack(pady=10)
+
+    text_box = tk.Text(
+        view_window,
+        width=70,
+        height=12,
+        font=("Arial", 11)
+    )
+    text_box.pack(pady=10)
+
+    text_box.config(state="disabled")
+
+    def view_document():
+
+        text_box.config(state="normal")
+        text_box.delete("1.0", tk.END)
+
+        try:
+            doc_id = int(id_entry.get())
+        except ValueError:
+            messagebox.showerror("Error", "Enter a valid ID")
+            return
+
+        doc = client.get_document(doc_id)
+
+        if doc is None:
+            text_box.insert(tk.END, "Document not found.")
+        else:
+            text_box.insert(
+                tk.END,
+                f"ID: {doc['id']}\n\n"
+                f"Title: {doc['title']}\n\n"
+                f"Category: {doc['category']}\n\n"
+                f"Content:\n{doc['content']}"
+            )
+
+        text_box.config(state="disabled")
+
+    tk.Button(
+        view_window,
+        text="View",
+        command=view_document,
+        bg="#3B82F6",
+        fg="white",
+        width=20,
+        height=2
+    ).pack(pady=10)
+
 
 def open_dashboard():
     dashboard = tk.Toplevel(window)
@@ -162,7 +234,21 @@ def open_dashboard():
         font=("Arial", 11, "bold"),
         command=open_categories
     )
+    
     categories_button.pack(pady=10)
+
+    view_button = tk.Button(
+        dashboard,
+        text="View Document",
+        width=25,
+        height=2,
+        bg="#10B981",
+        fg="white",
+        font=("Arial", 11, "bold"),
+        command=open_view
+    )
+
+    view_button.pack(pady=10)
 
     upload_button = tk.Button(
         dashboard,

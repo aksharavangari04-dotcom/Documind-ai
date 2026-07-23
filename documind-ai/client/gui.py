@@ -374,13 +374,35 @@ def login():
     )
     password_entry.pack(pady=8)
 
-    def submit_login():
+    session = load_session()
+
+    if session:
+        phone_entry.insert(0, session.get("phone", ""))
+        password_entry.insert(0, session.get("password", ""))
+
+
+     def submit_login():
 
         phone = phone_entry.get().strip()
         password = password_entry.get()
 
         try:
             response = api_login(phone, password)
+           
+            print("Status Code:", response.status_code)
+            print("Response:", response.text)
+
+            login_button = tk.Button(
+                login_window,
+                text="Login",
+                 width=20,
+                 height=2,
+                 bg="#2563EB",
+                 fg="white",
+                 command=submit_login
+            )
+
+            login_button.pack(pady=20)
 
             print("Status Code:", response.status_code)
             print("Response:", response.text)
@@ -390,9 +412,10 @@ def login():
                 data = response.json()
 
                 save_session({
-                    "access_token": data["access_token"],
+                    "phone": phone,
+                    "password": password,
                     "username": data["username"],
-                    "phone": data["phone"]
+                    "access_token": data["access_token"]
                 })
 
                 messagebox.showinfo(
@@ -458,8 +481,6 @@ subtitle = tk.Label(
 )
 subtitle.pack()
 
-session = load_session()
-
 login_button = tk.Button(
     window,
     text="Login",
@@ -468,7 +489,7 @@ login_button = tk.Button(
     bg="#14B8A6",
     fg="white",
     font=("Arial", 12, "bold"),
-    command=open_dashboard if session else login
+    command=login
 )
 login_button.pack(pady=30)
 

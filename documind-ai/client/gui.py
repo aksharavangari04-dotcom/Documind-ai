@@ -3,6 +3,7 @@ from tkinter import messagebox
 from auth import login as api_login
 from api_client import CorpusClient
 from sample_data import documents
+from session import save_session, load_session
 
 client = CorpusClient()
 
@@ -10,7 +11,7 @@ def open_search():
 
     search_window = tk.Toplevel(window)
     search_window.title("Search Documents")
-    search_window.geometry("600x500")
+    search_window.geometry("700x600")
     search_window.configure(bg="#0F172A")
 
     title = tk.Label(
@@ -72,7 +73,7 @@ def open_categories():
     category_window = tk.Toplevel(window)
 
     category_window.title("Categories")
-    category_window.geometry("500x500")
+    category_window.geometry("700x600")
     category_window.configure(bg="#0F172A")
    
     title = tk.Label(
@@ -113,7 +114,7 @@ def open_view():
     view_window = tk.Toplevel(window)
 
     view_window.title("View Document")
-    view_window.geometry("700x700")
+    view_window.geometry("700x600")
     view_window.configure(bg="#0F172A")
 
     title = tk.Label(
@@ -280,7 +281,7 @@ def open_upload():
     upload_window = tk.Toplevel(window)
 
     upload_window.title("Upload Document")
-    upload_window.geometry("500x300")
+    upload_window.geometry("700x600")
     upload_window.configure(bg="#0F172A")
 
     tk.Label(
@@ -328,7 +329,7 @@ def login():
 
     login_window = tk.Toplevel(window)
     login_window.title("DocuMind AI Login")
-    login_window.geometry("400x350")
+    login_window.geometry("700x600")
     login_window.configure(bg="#1E293B")
 
     login_title = tk.Label(
@@ -381,7 +382,19 @@ def login():
         try:
             response = api_login(phone, password)
 
+            print("Status Code:", response.status_code)
+            print("Response:", response.text)
+
             if response.status_code == 200:
+
+                data = response.json()
+
+                save_session({
+                    "access_token": data["access_token"],
+                    "username": data["username"],
+                    "phone": data["phone"]
+                })
+
                 messagebox.showinfo(
                     "Success",
                     "Login Successful!"
@@ -445,6 +458,8 @@ subtitle = tk.Label(
 )
 subtitle.pack()
 
+session = load_session()
+
 login_button = tk.Button(
     window,
     text="Login",
@@ -453,7 +468,7 @@ login_button = tk.Button(
     bg="#14B8A6",
     fg="white",
     font=("Arial", 12, "bold"),
-    command=login
+    command=open_dashboard if session else login
 )
 login_button.pack(pady=30)
 

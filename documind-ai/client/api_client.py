@@ -46,3 +46,23 @@ class CorpusClient:
                 return doc
 
         return None
+
+
+    def summarize(self, doc_id):
+
+        document = self.get_document(doc_id)
+
+        if document is None:
+            return None
+
+        content = document["content"]
+
+        words = content.split()
+
+        summary = " ".join(words[:30])
+
+        return {
+            "id": doc_id,
+            "title": document["title"],
+            "summary": summary
+        }

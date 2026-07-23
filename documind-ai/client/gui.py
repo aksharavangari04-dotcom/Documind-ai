@@ -42,31 +42,41 @@ def open_search():
 
         keyword = keyword_entry.get().strip()
 
-        results = client.search(keyword)
-
-        result_box.delete("1.0", tk.END)
-
-        if not results:
-            result_box.insert(tk.END, "No documents found.")
+        if keyword == "":
+            messagebox.showerror(
+                "Error",
+                "Enter search keyword"
+            )
             return
 
-        for doc in results:
-            result_box.insert(
-                tk.END,
-                f"ID: {doc['id']}\n"
-                f"Title: {doc['title']}\n"
-                f"Category: {doc['category']}\n\n"
-            )
+        try:
+            results = client.search(keyword)
 
-    tk.Button(
-        search_window,
-        text="Search",
-        command=search,
-        bg="#3B82F6",
-        fg="white",
-        width=20,
-        height=2
-    ).pack()
+            result_box.delete("1.0", tk.END)
+
+            if not results:
+                result_box.insert(
+                    tk.END,
+                    "No documents found."
+                )
+                return
+
+
+            for doc in results:
+                result_box.insert(
+                    tk.END,
+                    f"ID: {doc['id']}\n"
+                    f"Title: {doc['title']}\n"
+                    f"Category: {doc['category']}\n\n"
+                )
+
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Search Error",
+                str(e)
+            )
 
 def open_categories():
 
@@ -189,10 +199,10 @@ def open_view():
 
 
 def open_dashboard():
-    dashboard = tk.Toplevel(window)
 
+    dashboard = tk.Toplevel(window)
     dashboard.title("DocuMind AI Dashboard")
-    dashboard.geometry("800x500")
+    dashboard.geometry("800x700")
     dashboard.configure(bg="#0F172A")
 
     title = tk.Label(
@@ -263,6 +273,18 @@ def open_dashboard():
     )
     upload_button.pack(pady=10)
 
+    summarize_button = tk.Button(
+        dashboard,
+        text="Summarize Document",
+        width=25,
+        height=2,
+        bg="#EF4444",
+        fg="white",
+        font=("Arial", 11, "bold"),
+        command=open_summarize
+    )
+    summarize_button.pack(pady=10)
+
     logout_button = tk.Button(
         dashboard,
         text="Logout",
@@ -324,6 +346,82 @@ def open_upload():
         height=2
     ).pack(pady=20)
 
+def open_summarize():
+
+    summarize_window = tk.Toplevel(window)
+
+    summarize_window.title("Summarize Document")
+    summarize_window.geometry("700x600")
+    summarize_window.configure(bg="#0F172A")
+
+
+    title = tk.Label(
+        summarize_window,
+        text="Summarize Document",
+        font=("Arial", 20, "bold"),
+        bg="#0F172A",
+        fg="white"
+    )
+    title.pack(pady=20)
+
+
+    tk.Label(
+        summarize_window,
+        text="Enter Document ID",
+        bg="#0F172A",
+        fg="white",
+        font=("Arial", 12)
+    ).pack()
+
+
+    document_id_entry = tk.Entry(
+        summarize_window,
+        width=30,
+        font=("Arial", 12)
+    )
+    document_id_entry.pack(pady=10)
+
+
+    def summarize():
+
+        doc_id = document_id_entry.get().strip()
+
+        if doc_id == "":
+            messagebox.showerror(
+                "Error",
+                "Please enter document ID"
+            )
+            return
+
+
+        result = client.summarize(int(doc_id))
+
+        if result:
+
+            messagebox.showinfo(
+                "Summary",
+                result["summary"]
+         )
+
+        else:
+
+             messagebox.showerror(
+                 "Error",
+                 "Document not found"
+         )
+
+
+    summarize_button = tk.Button(
+        summarize_window,
+        text="Summarize",
+        width=20,
+        height=2,
+        bg="#EF4444",
+        fg="white",
+        command=summarize
+    )
+
+    summarize_button.pack(pady=20)
 
 def login():
 
@@ -331,6 +429,7 @@ def login():
     login_window.title("DocuMind AI Login")
     login_window.geometry("700x600")
     login_window.configure(bg="#1E293B")
+
 
     login_title = tk.Label(
         login_window,
@@ -341,6 +440,8 @@ def login():
     )
     login_title.pack(pady=20)
 
+
+    # Phone Number
     phone_label = tk.Label(
         login_window,
         text="Phone Number",
@@ -350,6 +451,7 @@ def login():
     )
     phone_label.pack()
 
+
     phone_entry = tk.Entry(
         login_window,
         width=30,
@@ -357,6 +459,9 @@ def login():
     )
     phone_entry.pack(pady=8)
 
+
+
+    # Password
     password_label = tk.Label(
         login_window,
         text="Password",
@@ -366,6 +471,7 @@ def login():
     )
     password_label.pack()
 
+
     password_entry = tk.Entry(
         login_window,
         width=30,
@@ -374,6 +480,9 @@ def login():
     )
     password_entry.pack(pady=8)
 
+
+
+    # Load saved session
     session = load_session()
 
     if session:
@@ -381,69 +490,80 @@ def login():
         password_entry.insert(0, session.get("password", ""))
 
 
-     def submit_login():
+
+    # Login Function
+    def submit_login():
 
         phone = phone_entry.get().strip()
         password = password_entry.get()
 
-        try:
-            response = api_login(phone, password)
-           
-            print("Status Code:", response.status_code)
-            print("Response:", response.text)
 
-            login_button = tk.Button(
-                login_window,
-                text="Login",
-                 width=20,
-                 height=2,
-                 bg="#2563EB",
-                 fg="white",
-                 command=submit_login
+        if phone == "" or password == "":
+            messagebox.showerror(
+                "Error",
+                "Please enter phone number and password"
             )
+            return
 
-            login_button.pack(pady=20)
+
+        try:
+
+            response = api_login(phone, password)
 
             print("Status Code:", response.status_code)
             print("Response:", response.text)
+
 
             if response.status_code == 200:
 
                 data = response.json()
 
+
                 save_session({
                     "phone": phone,
                     "password": password,
-                    "username": data["username"],
-                    "access_token": data["access_token"]
+                    "username": data.get("username", ""),
+                    "access_token": data.get("access_token", "")
                 })
+
 
                 messagebox.showinfo(
                     "Success",
                     "Login Successful!"
                 )
 
+
                 login_window.destroy()
                 open_dashboard()
+        
+
 
             elif response.status_code == 401:
+
                 messagebox.showerror(
                     "Login Failed",
                     "Incorrect phone number or password."
                 )
 
+
             else:
+
                 messagebox.showerror(
                     "Error",
                     response.text
                 )
 
+
         except Exception as e:
+
             messagebox.showerror(
                 "Connection Error",
                 str(e)
             )
 
+
+
+    # Login Button
     submit_button = tk.Button(
         login_window,
         text="Login",
@@ -454,14 +574,15 @@ def login():
         font=("Arial", 11, "bold"),
         command=submit_login
     )
-    submit_button.pack(pady=25)
 
+    submit_button.pack(pady=25)
 
 window = tk.Tk()
 
 window.title("DocuMind AI")
 window.geometry("800x550")
 window.configure(bg="#0F172A")
+
 
 title = tk.Label(
     window,
@@ -472,6 +593,7 @@ title = tk.Label(
 )
 title.pack(pady=(40, 10))
 
+
 subtitle = tk.Label(
     window,
     text="Intelligent Corpus Assistant",
@@ -480,6 +602,7 @@ subtitle = tk.Label(
     fg="#CBD5E1"
 )
 subtitle.pack()
+
 
 login_button = tk.Button(
     window,
@@ -491,6 +614,8 @@ login_button = tk.Button(
     font=("Arial", 12, "bold"),
     command=login
 )
+
 login_button.pack(pady=30)
+
 
 window.mainloop()

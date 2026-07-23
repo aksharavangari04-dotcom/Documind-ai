@@ -1,43 +1,57 @@
-from sample_data import documents
+import requests
+from config import BASE_URL
+from session import load_session
 
 
 class CorpusClient:
 
     def search(self, query):
 
-        results = []
+        session = load_session()
 
-        query = query.lower()
+        if session is None:
+            raise Exception("Please login first.")
 
-        # Smart keyword mapping
-        keywords = {
-            "ai": [
-                "artificial intelligence",
-                "machine learning",
-                "deep learning",
-                "ai"
-            ],
-            "ml": [
-                "machine learning",
-                "ml"
-            ]
+        token = session["access_token"]
+
+        headers = {
+            "Authorization": f"Bearer {token}"
         }
 
-        search_terms = keywords.get(query, [query])
+        response = requests.get(
+            f"{BASE_URL}/api/v1/records/search",
+            headers=headers,
+            params={
+                "query": query,
+                "limit": 10
+            }
+        )
 
-        for doc in documents:
+        response.raise_for_status()
 
-            text = (
-                doc["title"] + " " + doc["content"]
-            ).lower()
+        return response.json()
 
-            for term in search_terms:
-                if term in text:
-                    results.append(doc)
-                    break
+     def get_record(self, record_id):
 
-        return results
+        session = load_session()
 
+        if session is None:
+            raise Exception("Please login first.")
+
+        token = session["access_token"]
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        response = requests.get(
+            f"{BASE_URL}/api/v1/records/{record_id}",
+            headers=headers
+        )
+
+        response.raise_for_status()
+
+        return response.json()
 
     def get_document(self, doc_id):
 
@@ -55,14 +69,10 @@ class CorpusClient:
         if document is None:
             return None
 
-        content = document["content"]
-
-        words = content.split()
-
-        summary = " ".join(words[:30])
+        words = document["content"].split()
 
         return {
-            "id": doc_id,
+            "id": document["id"],
             "title": document["title"],
-            "summary": summary
+            "summary": " ".join(words[:30])
         }

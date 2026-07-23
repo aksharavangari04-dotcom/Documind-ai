@@ -1,8 +1,11 @@
 import tkinter as tk
+import requests
+from config import BASE_URL
+from session import load_session
+from sample_data import documents
 from tkinter import messagebox
 from auth import login as api_login
 from api_client import CorpusClient
-from sample_data import documents
 from session import save_session, load_session
 
 client = CorpusClient()
@@ -49,34 +52,29 @@ def open_search():
             )
             return
 
-        try:
-            results = client.search(keyword)
+        results = client.search(keyword)
 
-            result_box.delete("1.0", tk.END)
+        result_box.delete("1.0", tk.END)
 
-            if not results:
-                result_box.insert(
-                    tk.END,
-                    "No documents found."
-                )
-                return
+        if not results:
+            result_box.insert(tk.END, "No records found.")
+            return
 
-
-            for doc in results:
-                result_box.insert(
-                    tk.END,
-                    f"ID: {doc['id']}\n"
-                    f"Title: {doc['title']}\n"
-                    f"Category: {doc['category']}\n\n"
-                )
-
-
-        except Exception as e:
-
-            messagebox.showerror(
-                "Search Error",
-                str(e)
+        for doc in results:
+            result_box.insert(
+                tk.END,
+                str(doc) + "\n\n"
             )
+
+    tk.Button(
+        search_window,
+        text="Search",
+        command=search,
+        bg="#3B82F6",
+        fg="white",
+        width=20,
+        height=2
+    ).pack()
 
 def open_categories():
 

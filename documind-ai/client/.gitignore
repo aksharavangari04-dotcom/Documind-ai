@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Session file
+session.json

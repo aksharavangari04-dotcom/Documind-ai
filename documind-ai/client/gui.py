@@ -1,7 +1,6 @@
 import tkinter as tk
 import requests
 from config import BASE_URL
-from session import load_session
 from sample_data import documents
 from tkinter import messagebox
 from auth import login as api_login
@@ -33,48 +32,111 @@ def open_search():
     )
     keyword_entry.pack(pady=10)
 
+    # Text box styled with dark background and white text for high contrast
     result_box = tk.Text(
         search_window,
         width=60,
         height=15,
-        font=("Arial", 11)
+        font=("Arial", 11),
+        bg="#1E293B",
+        fg="#FFFFFF",
+        insertbackground="white",
+        highlightthickness=1,
+        highlightbackground="#3B82F6"
     )
     result_box.pack(pady=20)
-
+     
     def search():
-
+        print("STEP 1")
         keyword = keyword_entry.get().strip()
+        print("STEP 2:", keyword)
 
-        if keyword == "":
-            messagebox.showerror(
-                "Error",
-                "Enter search keyword"
-            )
+        if not keyword:
             return
 
-        results = client.search(keyword)
-
+        # Prepare Text Box
+        result_box.config(state="normal")
         result_box.delete("1.0", tk.END)
+        result_box.insert(tk.END, "Searching documents... Please wait.\n\n")
+        search_window.update_idletasks()
 
-        if not results:
-            result_box.insert(tk.END, "No records found.")
-            return
+        try: 
+            results = client.search(keyword)
 
-        for doc in results:
-            result_box.insert(
-                tk.END,
-                str(doc) + "\n\n"
-            )
+            result_box.delete("1.0", tk.END)
 
-    tk.Button(
+            if not results:
+                result_box.insert(tk.END, f"No documents found for '{keyword}'.\n")
+                return
+
+            for item in results:
+                try:
+                    # Get record ID safely
+                    rec_id = item.get("record_id") if isinstance(item, dict) else item
+                    
+                    record = None
+                    if rec_id:
+                        try:
+                            record = client.get_record(rec_id)
+                        except Exception as rec_err:
+                            print(f"Warning: Failed to fetch record {rec_id}:", rec_err)
+
+                    # Normalize record format
+                    if hasattr(record, "json"):
+                        record = record.json()
+                    elif isinstance(record, str):
+                        import json
+                        try:
+                            record = json.loads(record)
+                        except Exception:
+                            record = {"extracted_text": record}
+
+                    # Fallback to item dict if record fetch failed
+                    if not record and isinstance(item, dict):
+                        record = item
+                    elif not record:
+                        record = {}
+
+                    # Safely extract title and content
+                    title_val = (
+                        record.get("title") or 
+                        record.get("name") or 
+                        item.get("title") or 
+                        f"Record ({rec_id})"
+                    )
+                    
+                    desc_val = (
+                        record.get("description") or 
+                        record.get("extracted_text") or 
+                        record.get("content") or 
+                        record.get("text") or 
+                        "No content available"
+                    )
+
+                    # Insert formatted result
+                    result_box.insert(tk.END, f"Title: {title_val}\n")
+                    result_box.insert(tk.END, f"Content:\n{desc_val}\n")
+                    result_box.insert(tk.END, "\n-----------------------------------\n\n")
+                    
+                    search_window.update_idletasks()
+
+                except Exception as item_err:
+                    print(f"Skipping single item due to error: {item_err}")
+                    continue
+
+            print("SUCCESS: Search complete!")
+
+        except Exception as e:
+            print("ERROR IN SEARCH:", e)
+            result_box.delete("1.0", tk.END)
+            result_box.insert(tk.END, f"Error fetching search results: {e}\n")
+    
+    search_button = tk.Button(
         search_window,
         text="Search",
-        command=search,
-        bg="#3B82F6",
-        fg="white",
-        width=20,
-        height=2
-    ).pack()
+        command=search
+    )
+    search_button.pack(pady=10)
 
 def open_categories():
 
@@ -513,28 +575,23 @@ def login():
 
 
             if response.status_code == 200:
-
                 data = response.json()
+                token = data.get("access_token", "")
 
 
                 save_session({
                     "phone": phone,
                     "password": password,
                     "username": data.get("username", ""),
-                    "access_token": data.get("access_token", "")
+                    "access_token": token
                 })
 
-
-                messagebox.showinfo(
-                    "Success",
-                    "Login Successful!"
-                )
-
-
+                client.token = token
+                
+                # Close login window & hide main landing page directly
                 login_window.destroy()
+                window.withdraw()
                 open_dashboard()
-        
-
 
             elif response.status_code == 401:
 
@@ -559,10 +616,7 @@ def login():
                 str(e)
             )
 
-
-
-    # Login Button
-    submit_button = tk.Button(
+    tk.Button(
         login_window,
         text="Login",
         width=20,
@@ -571,9 +625,8 @@ def login():
         fg="white",
         font=("Arial", 11, "bold"),
         command=submit_login
-    )
+    ).pack(pady=25)
 
-    submit_button.pack(pady=25)
 
 window = tk.Tk()
 

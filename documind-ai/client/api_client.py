@@ -1,6 +1,7 @@
 import requests
 from config import BASE_URL
 from session import load_session
+from sample_data import documents
 
 
 class CorpusClient:
@@ -28,16 +29,19 @@ class CorpusClient:
         )
 
         response.raise_for_status()
+        
+        print("Search Status:", response.status_code)
+        print("Search Response:", response.text)
 
         return response.json()
 
-     def get_record(self, record_id):
+    def get_record(self, record_id):
 
         session = load_session()
 
         if session is None:
             raise Exception("Please login first.")
-
+ 
         token = session["access_token"]
 
         headers = {
@@ -48,6 +52,9 @@ class CorpusClient:
             f"{BASE_URL}/api/v1/records/{record_id}",
             headers=headers
         )
+
+        print("Get Record Status:", response.status_code)
+        print("Get Record Response:", response.text)
 
         response.raise_for_status()
 

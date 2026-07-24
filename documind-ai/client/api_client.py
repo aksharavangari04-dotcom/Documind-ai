@@ -1,85 +1,86 @@
 import requests
 from config import BASE_URL
 from session import load_session
-from sample_data import documents
 
 
 class CorpusClient:
 
-    def search(self, query):
+    def __init__(self, token=None):
+        self.token = token
 
-        session = load_session()
+    def _get_headers(self):
+        """Retrieves authorization headers using stored session or client token."""
+        token = self.token
+        if not token:
+            session = load_session()
+            if session and "access_token" in session:
+                token = session["access_token"]
+                self.token = token
 
-        if session is None:
+        if not token:
             raise Exception("Please login first.")
 
-        token = session["access_token"]
+        return {"Authorization": f"Bearer {token}"}
 
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
+    def search(self, query):
+        """Search records via GET /api/v1/records/search"""
+        headers = self._get_headers()
         response = requests.get(
             f"{BASE_URL}/api/v1/records/search",
             headers=headers,
-            params={
-                "query": query,
-                "limit": 10
-            }
+            params={"query": query, "limit": 10}
         )
-
         response.raise_for_status()
-        
-        print("Search Status:", response.status_code)
-        print("Search Response:", response.text)
-
         return response.json()
 
     def get_record(self, record_id):
-
-        session = load_session()
-
-        if session is None:
-            raise Exception("Please login first.")
- 
-        token = session["access_token"]
-
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
+        """Get record details via GET /api/v1/records/{record_id}"""
+        headers = self._get_headers()
         response = requests.get(
             f"{BASE_URL}/api/v1/records/{record_id}",
             headers=headers
         )
-
-        print("Get Record Status:", response.status_code)
-        print("Get Record Response:", response.text)
-
         response.raise_for_status()
-
         return response.json()
 
-    def get_document(self, doc_id):
+    def get_categories(self):
+        """Fetch available categories via GET /api/v1/categories/"""
+        headers = self._get_headers()
+        response = requests.get(
+            f"{BASE_URL}/api/v1/categories/",
+            headers=headers
+        )
+        response.raise_for_status()
+        return response.json()
 
-        for doc in documents:
-            if doc["id"] == doc_id:
-                return doc
+    def upload_document(self, file_path, category_id=None):
+        """Uploads a real file to POST /api/v1/records/upload"""
+        headers = self._get_headers()
+        url = f"{BASE_URL}/api/v1/records/upload"
 
-        return None
+        try:
+            with open(file_path, "rb") as file_data:
+                files = {"file": file_data}
+                data = {}
+                if category_id:
+                    data["category_id"] = category_id
 
+                response = requests.post(url, headers=headers, files=files, data=data)
+                return response
+        except FileNotFoundError:
+            raise Exception("File not found on your local system.")
+        except Exception as e:
+            raise Exception(f"Upload failed: {str(e)}")
 
-    def summarize(self, doc_id):
-
-        document = self.get_document(doc_id)
-
-        if document is None:
+    def summarize(self, record_id):
+        """Fetch extracted text/summary via GET /api/v1/records/{record_id}/extracted_text"""
+        headers = self._get_headers()
+        url = f"{BASE_URL}/api/v1/records/{record_id}/extracted_text"
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
             return None
-
-        words = document["content"].split()
-
-        return {
-            "id": document["id"],
-            "title": document["title"],
-            "summary": " ".join(words[:30])
-        }
+        except Exception as e:
+            print("Summarize error:", e)
+            return None

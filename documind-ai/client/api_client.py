@@ -56,12 +56,15 @@ class CorpusClient:
         raise Exception(f"Search failed: {response.text}")
 
     def get_categories(self):
-        """Fetch categories list from the server."""
+        """Fetch active categories list from server."""
         headers = self._get_headers()
         url = f"{BASE_URL}/api/v1/categories/"
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+        except Exception as e:
+            print(f"Error fetching categories: {e}")
         return []
 
     def get_record(self, record_id):
@@ -109,16 +112,16 @@ class CorpusClient:
         file_name = os.path.basename(file_path)
         generated_uuid = str(uuid.uuid4())
 
-        # 1. Active User ID
+        # 1. Retrieve Active User ID
         session = load_session() or {}
         user_id = session.get("user_id") or "987ba50f-92cd-406e-8ac9-2bccb7e9d29e"
 
-        # 2. Validate Title (at least 2 words)
+        # 2. Validate Title (at least 2 words required by API)
         if not title or len(title.strip().split()) < 2:
             clean_name = os.path.splitext(file_name)[0].replace("_", " ").replace("-", " ")
             title = f"{clean_name.capitalize()} Document" if len(clean_name.split()) < 2 else clean_name
 
-        # 3. Dynamic Category Lookup (Preserving UUIDs/Strings)
+        # 3. Dynamic Category UUID Lookup (Prevents 400 & 500 crashes)
         if not category_ids:
             categories_data = self.get_categories()
             if isinstance(categories_data, list) and len(categories_data) > 0:
@@ -126,17 +129,17 @@ class CorpusClient:
                 cat_id = first_cat.get("id") if isinstance(first_cat, dict) else first_cat
                 category_list = [str(cat_id)]
             else:
-                category_list = [1]
+                category_list = ["379d6867-57c1-4f57-b6ee-fb734313e538"]
         elif isinstance(category_ids, list):
-            category_list = [str(x) if not isinstance(x, int) else x for x in category_ids]
+            category_list = [str(x) for x in category_ids]
         else:
-            category_list = [str(category_ids) if not isinstance(category_ids, int) else category_ids]
+            category_list = [str(category_ids)]
 
-        # Format as JSON array string
+        # Serialize cleanly to JSON array string: '["379d6867-57c1-4f57-b6ee-fb734313e538"]'
         category_json = json.dumps(category_list)
 
         # ----------------------------------------------------
-        # STEP 1: Upload Chunk
+        # STEP 1: Upload File Chunk
         # ----------------------------------------------------
         chunk_url = f"{BASE_URL}/api/v1/records/upload/chunk"
 
@@ -167,7 +170,7 @@ class CorpusClient:
         # ----------------------------------------------------
         finalize_url = f"{BASE_URL}/api/v1/records/upload"
 
-        # Headers without forced Content-Type
+        # Exclude forced Content-Type so requests auto-formats form parameters
         finalize_headers = {k: v for k, v in headers.items() if k.lower() != "content-type"}
 
         finalize_data = {
@@ -182,12 +185,5 @@ class CorpusClient:
             "category_ids": category_json
         }
 
-        print("Finalize URL:", finalize_url)
-        print("Headers:", finalize_headers)
-        print("Data:", finalize_data)
-
         finalize_res = requests.post(finalize_url, headers=finalize_headers, data=finalize_data)
-        print("Status:", finalize_res.status_code)
-        print("Response:", finalize_res.text)
-        
         return finalize_res

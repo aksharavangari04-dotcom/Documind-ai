@@ -11,3 +11,4 @@ wheels/
 
 # Session file
 session.json
+local_uploads_db.json

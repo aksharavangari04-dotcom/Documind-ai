@@ -1,1 +1,21 @@
-Artificial Intelligence Notes
+==================================================
+DOCUMIND AI - SAMPLE CORPUS DOCUMENT
+==================================================
+
+Title: Introduction to Compiler Design & Parsing Strategies
+Category: Computer Science & Engineering
+Author: Research Division
+
+Overview:
+Compiler design is a fundamental subject in computer science engineering. 
+A compiler translates high-level source code into low-level machine code through multiple sequential phases.
+
+Key Phases of Compiler Ingestion:
+1. Lexical Analysis: Converts raw characters into discrete tokens.
+2. Syntax Analysis (Parsing): Builds a parse tree using context-free grammars.
+3. Semantic Analysis: Verifies type consistency and variable declarations.
+4. Intermediate Code Generation: Creates abstract machine representation.
+5. Code Optimization & Generation: Produces efficient target binary execution.
+
+Conclusion:
+Efficient file parsing and two-step chunking allow intelligent systems to index large corpora seamlessly for rapid search and summarization retrieval.

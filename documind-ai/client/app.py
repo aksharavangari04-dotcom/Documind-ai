@@ -14,62 +14,74 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling (Slate Dark Theme Matching Original GUI)
+# Custom Premium Styling & Sidebar Enhancements
 st.markdown("""
     <style>
-    /* Dark Gradient Background */
+    /* Dark Radial Background */
     .stApp {
-        background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%) !important;
+        background: radial-gradient(circle at 10% 10%, #1e293b 0%, #0b0f19 100%) !important;
         color: #F8FAFC !important;
         font-family: 'Inter', sans-serif;
     }
     
-    /* Modern Sidebar */
-    div[data-testid="stSidebar"] {
-        background: #0b1120 !important;
+    /* Luxury Glassmorphism Sidebar */
+    section[data-testid="stSidebar"] {
+        background: #090d16 !important;
         border-right: 1px solid #1e293b !important;
+        padding-top: 1rem !important;
     }
-    
-    /* Sleek Cards */
-    .feature-card {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid #334155;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+
+    /* Sidebar Radio Navigation Items - Big, Attractive Cards */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label {
+        background: #131b2e !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        margin-bottom: 10px !important;
+        font-size: 1.05rem !important;
+        font-weight: 500 !important;
+        transition: all 0.25s ease !important;
+        cursor: pointer !important;
     }
-    
-    /* Glowing Action Buttons */
+
+    div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+        background: #1e293b !important;
+        border-color: #3b82f6 !important;
+        transform: translateX(4px);
+    }
+
+    /* Active Selected Radio Item */
+    div[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] {
+        background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%) !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+    }
+
+    /* Action Buttons */
     .stButton>button {
         background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
         color: white !important;
         font-weight: 600 !important;
         border-radius: 10px !important;
-        border: none !important;
-        padding: 0.6rem 1.4rem !important;
+        padding: 0.65rem 1.4rem !important;
         box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
-        transition: all 0.3s ease !important;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.55) !important;
+        border: none !important;
     }
 
-    /* Metric Cards Styling */
-    div[data-testid="stMetric"] {
-        background: rgba(30, 41, 59, 0.8) !important;
-        border: 1px solid #334155 !important;
-        border-radius: 12px !important;
-        padding: 12px 18px !important;
-    }
-
-    /* Modern Expanders */
-    div[data-testid="stExpander"] {
-        background: rgba(17, 24, 39, 0.6) !important;
-        border: 1px solid #334155 !important;
-        border-radius: 12px !important;
+    /* User Profile Pill at Top Right */
+    .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #1e293b;
+        border: 1px solid #3b82f6;
+        padding: 6px 14px;
+        border-radius: 25px;
+        color: #93c5fd;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        float: right;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -194,6 +206,14 @@ else:
     st.sidebar.title("🧠 DocuMind AI")
     st.sidebar.caption("Connected to Indic Corpus API")
 
+    user_info = st.session_state.get("username") or (st.session_state.get("token")[:10] if st.session_state.get("token") else "Active User")
+    col_dash, col_profile = st.columns([3, 1])
+    with col_dash:
+        st.markdown("<h2 style='margin:0; color:#60a5fa;'>🧠 DocuMind AI</h2>", unsafe_allow_html=True)
+    with col_profile:
+        st.markdown(f"<div class='user-pill'>👤 {user_info} <span style='color:#10b981;'>●</span></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    
     menu_choice = st.sidebar.radio(
         "Navigation",
         [

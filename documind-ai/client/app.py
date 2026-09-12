@@ -17,38 +17,66 @@ st.set_page_config(
 # Custom Styling (Slate Dark Theme Matching Original GUI)
 st.markdown("""
     <style>
+    /* Dark Gradient Background */
     .stApp {
-        background-color: #0F172A;
-        color: #F8FAFC;
+        background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%) !important;
+        color: #F8FAFC !important;
+        font-family: 'Inter', sans-serif;
     }
+    
+    /* Modern Sidebar */
     div[data-testid="stSidebar"] {
-        background-color: #1E293B;
+        background: #0b1120 !important;
+        border-right: 1px solid #1e293b !important;
     }
+    
+    /* Sleek Cards */
+    .feature-card {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Glowing Action Buttons */
     .stButton>button {
-        background-color: #3B82F6;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 0.5rem 1.2rem;
-        font-weight: bold;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
+        border: none !important;
+        padding: 0.6rem 1.4rem !important;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
+        transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        background-color: #2563EB;
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.55) !important;
     }
-    .info-card {
-        background-color: #1E293B;
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin-bottom: 1rem;
+
+    /* Metric Cards Styling */
+    div[data-testid="stMetric"] {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border: 1px solid #334155 !important;
+        border-radius: 12px !important;
+        padding: 12px 18px !important;
+    }
+
+    /* Modern Expanders */
+    div[data-testid="stExpander"] {
+        background: rgba(17, 24, 39, 0.6) !important;
+        border: 1px solid #334155 !important;
+        border-radius: 12px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # Helper function to extract deep/hidden text from any Corpus API response
 def extract_complete_text(data):
-    """Recursively extracts the fullest available text content from API response."""
+    """Extracts text from documents or stitches ASR audio segments."""
     if not data:
         return ""
     if isinstance(data, str):
@@ -61,27 +89,23 @@ def extract_complete_text(data):
             pass
 
     if isinstance(data, dict):
-        # 1. Check direct full-text fields
-        priority_keys = [
-            "raw_text", "transcription", "extracted_text", "full_text",
-            "text", "content", "body", "data", "description", "summary"
-        ]
+        # 1. Audio ASR segments ఉంటే అన్ని పదాలను ఒకే పేరాగా కలపడం
+        extracted_obj = data.get("extracted_text")
+        if isinstance(extracted_obj, dict):
+            segments = extracted_obj.get("segments", [])
+            if segments and isinstance(segments, list):
+                words = [seg.get("text", "").strip() for seg in segments if seg.get("text")]
+                if words:
+                    return " ".join(words)
+            if extracted_obj.get("text"):
+                return extracted_obj.get("text")
+
+        # 2. సాధారణ డాక్యుమెంట్ల టెక్స్ట్ ఫీల్డ్స్
+        priority_keys = ["raw_text", "transcription", "full_text", "text", "content", "body", "description"]
         for key in priority_keys:
             val = data.get(key)
-            if isinstance(val, str) and len(val.strip()) > 30:
+            if isinstance(val, str) and len(val.strip()) > 10:
                 return val.strip()
-
-        # 2. Check nested payloads (e.g. data.items, result.text)
-        for nested in ["data", "result", "payload", "record", "metadata"]:
-            if isinstance(data.get(nested), dict):
-                res = extract_complete_text(data[nested])
-                if res:
-                    return res
-
-        # Fallback to description or combined non-empty string values
-        for key in priority_keys:
-            if data.get(key):
-                return str(data.get(key)).strip()
 
     return str(data)
 
@@ -99,11 +123,14 @@ client = st.session_state["client"]
 # AUTHENTICATION SCREEN (Login & Registration)
 # -------------------------------------------------------------------
 if not st.session_state["authenticated"]:
-    st.title("🧠 DocuMind AI")
-    st.caption("Intelligent Corpus Assistant")
-    
-    auth_tab1, auth_tab2 = st.tabs(["🔑 Login", "📝 Create Account"])
+    left_col, center_col, right_col = st.columns([1, 1.3, 1])
 
+    with center_col:
+        st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center;'>🧠 DocuMind AI</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94A3B8;'>Intelligent Corpus Assistant</p>", unsafe_allow_html=True)
+        auth_tab1, auth_tab2 = st.tabs(["🔑 Login", "📝 Create Account"])
+        
     with auth_tab1:
         st.subheader("User Authentication")
         login_phone = st.text_input("Phone Number", value="+91", key="login_phone")
@@ -182,7 +209,14 @@ else:
         st.session_state["authenticated"] = False
         st.session_state["token"] = ""
         st.rerun()
-
+        
+        st.markdown("""
+            <div style="background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%); padding: 1.2rem 1.8rem; border-radius: 12px; border: 1px solid #2563eb; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0; color: #60a5fa; font-size: 1.6rem;">⚡ DocuMind AI Dashboard</h2>
+                <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.9rem;">Connected to Indic Corpus API</p>
+            </div>
+        """, unsafe_allow_html=True)
+    
     # 1. SEARCH DOCUMENTS
     if menu_choice == "🔍 Search Documents":
         st.header("🔍 Search Documents")

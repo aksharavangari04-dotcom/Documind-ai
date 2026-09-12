@@ -29,15 +29,61 @@ st.markdown("""
         color: white;
         border-radius: 8px;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.2rem;
         font-weight: bold;
     }
     .stButton>button:hover {
         background-color: #2563EB;
         color: white;
     }
+    .info-card {
+        background-color: #1E293B;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+    }
     </style>
 """, unsafe_allow_html=True)
+
+# Helper function to extract deep/hidden text from any Corpus API response
+def extract_complete_text(data):
+    """Recursively extracts the fullest available text content from API response."""
+    if not data:
+        return ""
+    if isinstance(data, str):
+        return data
+
+    if hasattr(data, "json"):
+        try:
+            data = data.json()
+        except Exception:
+            pass
+
+    if isinstance(data, dict):
+        # 1. Check direct full-text fields
+        priority_keys = [
+            "raw_text", "transcription", "extracted_text", "full_text",
+            "text", "content", "body", "data", "description", "summary"
+        ]
+        for key in priority_keys:
+            val = data.get(key)
+            if isinstance(val, str) and len(val.strip()) > 30:
+                return val.strip()
+
+        # 2. Check nested payloads (e.g. data.items, result.text)
+        for nested in ["data", "result", "payload", "record", "metadata"]:
+            if isinstance(data.get(nested), dict):
+                res = extract_complete_text(data[nested])
+                if res:
+                    return res
+
+        # Fallback to description or combined non-empty string values
+        for key in priority_keys:
+            if data.get(key):
+                return str(data.get(key)).strip()
+
+    return str(data)
 
 # Session state initialization
 if "authenticated" not in st.session_state:
@@ -176,16 +222,12 @@ else:
                                     rec_id = record.get("id") or record.get("record_id")
 
                                 title_val = record.get("title") or record.get("name") or f"Record ({rec_id})"
-                                desc_val = (
-                                    record.get("description") or
-                                    record.get("extracted_text") or
-                                    record.get("content") or
-                                    "No content text available."
-                                )
+                                desc_val = extract_complete_text(record) or "No content text available."
 
                                 with st.expander(f"📄 {title_val} (ID: {rec_id})"):
                                     st.write(f"**Record ID:** `{rec_id}`")
-                                    st.write(f"**Content:** {desc_val}")
+                                    st.write(f"**Content Preview:** {desc_val[:300]}...")
+                                    st.code(f"{rec_id}", language="text")
                     except Exception as e:
                         st.error(f"❌ Error fetching search results: {e}")
 
@@ -204,27 +246,55 @@ else:
             except Exception as e:
                 st.error(f"Error loading categories: {e}")
 
-    # 3. VIEW DOCUMENT RECORD
+    # 3. VIEW DOCUMENT RECORD (Expanded Complete View)
     elif menu_choice == "📑 View Document Record":
-        st.header("📑 View Record Details")
+        st.header("📑 View Complete Document Record")
+        st.write("Retrieve the complete document content and all attached corpus metadata.")
+        
         rec_id = st.text_input("Enter Record ID:")
         if st.button("👁️ Fetch Details"):
             if not rec_id.strip():
                 st.warning("Please enter a Record ID.")
             else:
-                with st.spinner("Fetching record details..."):
+                with st.spinner("Fetching complete record from Indic Corpus..."):
                     try:
-                        doc = client.get_record(rec_id.strip())
-                        if not doc:
+                        raw_record = client.get_record(rec_id.strip())
+                        if not raw_record:
                             st.warning("Record not found.")
                         else:
-                            title_val = doc.get("title") or doc.get("name") or f"Record ({rec_id})"
-                            text_val = doc.get("description") or doc.get("extracted_text") or doc.get("content") or str(doc)
+                            doc = raw_record.json() if hasattr(raw_record, "json") else raw_record
+                            
+                            title_val = doc.get("title") or doc.get("name") or f"Record ({rec_id.strip()})"
+                            full_content = extract_complete_text(doc)
+
                             st.subheader(f"📖 {title_val}")
-                            st.code(f"Record ID: {rec_id}", language="text")
-                            st.text_area("Record Content", text_val, height=300)
+                            st.caption(f"Record Identifier: `{rec_id.strip()}`")
+
+                            # Metadata Summary Cards
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Language / Category", doc.get("language") or doc.get("category") or "Telugu / Indic")
+                            with col2:
+                                word_count = len(full_content.split()) if full_content else 0
+                                st.metric("Word Count", f"{word_count} words")
+                            with col3:
+                                st.metric("Character Count", f"{len(full_content)} chars")
+
+                            st.markdown("---")
+                            st.markdown("### 📄 Complete Document Content")
+                            
+                            # Display in an expanded readable text box
+                            st.text_area(
+                                label="Document Body",
+                                value=full_content,
+                                height=380
+                            )
+
+                            # Raw JSON details dropdown for inspection
+                            with st.expander("🔍 Inspect Full Corpus API Metadata"):
+                                st.json(doc)
                     except Exception as e:
-                        st.error(f"❌ Error: {e}")
+                        st.error(f"❌ Error fetching record: {e}")
 
     # 4. UPLOAD DOCUMENT
     elif menu_choice == "📤 Upload File to Corpus":
@@ -239,7 +309,6 @@ else:
             if st.button("📤 Upload to Corpus"):
                 with st.spinner("Uploading and indexing..."):
                     try:
-                        # Write temporarily so client.upload_document(path) gets a valid path
                         suffix = "." + uploaded_file.name.split(".")[-1]
                         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                             tmp.write(uploaded_file.getbuffer())
@@ -255,40 +324,65 @@ else:
                     except Exception as e:
                         st.warning(f"⚠️ Binary transmission completed. Note: {e}")
 
-    # 5. SUMMARIZE DOCUMENT
+    # 5. SUMMARIZE DOCUMENT (Smart Multi-Section Summary)
     elif menu_choice == "💡 Summarize Document":
-        st.header("💡 Summarize Document")
-        sum_id = st.text_input("Enter Record ID for Summary:")
-        if st.button("⚡ Generate Summary"):
+        st.header("💡 Intelligent Document Summarizer")
+        st.write("Extract executive summary, key insights, and structured bullet points from any corpus document.")
+        
+        sum_id = st.text_input("Enter Record ID to Summarize:")
+        if st.button("⚡ Generate AI Summary"):
             if not sum_id.strip():
                 st.warning("Please enter a Record ID.")
             else:
-                with st.spinner("Extracting and summarizing..."):
+                with st.spinner("Analyzing document and generating comprehensive summary..."):
                     try:
-                        res = client.summarize(sum_id.strip())
-                        extracted = None
-                        if isinstance(res, dict):
-                            extracted = res.get("extracted_text") or res.get("summary") or res.get("content")
+                        # 1. Fetch raw summary endpoint
+                        server_res = client.summarize(sum_id.strip())
+                        extracted_summary = None
+                        if isinstance(server_res, dict):
+                            extracted_summary = (
+                                server_res.get("summary") or 
+                                server_res.get("extracted_text") or 
+                                server_res.get("content")
+                            )
 
-                        if not extracted:
-                            record = client.get_record(sum_id.strip())
-                            if isinstance(record, dict):
-                                title = record.get("title") or record.get("name") or sum_id
-                                content = (
-                                    record.get("description") or
-                                    record.get("extracted_text") or
-                                    record.get("content") or
-                                    ""
-                                )
-                                if content:
-                                    sentences = [s.strip() for s in content.replace("\n", " ").split(".") if s.strip()]
-                                    summary_text = ". ".join(sentences[:3]) + "." if len(sentences) >= 3 else content
-                                    extracted = f"📌 Document Title: {title}\n\n📝 Extracted Executive Summary:\n{summary_text}"
+                        # 2. Fetch full record to analyze and extract deep content
+                        full_record = client.get_record(sum_id.strip())
+                        record_dict = full_record.json() if hasattr(full_record, "json") else (full_record if isinstance(full_record, dict) else {})
+                        doc_title = record_dict.get("title") or record_dict.get("name") or f"Record {sum_id.strip()}"
+                        full_text = extract_complete_text(record_dict)
 
-                        if extracted:
-                            st.success("Summary Ready:")
-                            st.info(extracted)
-                        else:
+                        content_to_summarize = extracted_summary or full_text
+
+                        if not content_to_summarize or len(content_to_summarize.strip()) == 0:
                             st.warning(f"❌ No text content available to summarize for Record ID: {sum_id}")
+                        else:
+                            st.success("✅ Document Summary Generated Successfully!")
+                            st.subheader(f"📌 {doc_title}")
+                            st.caption(f"Target Record: `{sum_id.strip()}`")
+
+                            # Clean sentences for multi-point breakdown
+                            clean_text = content_to_summarize.replace("\n", " ")
+                            sentences = [s.strip() for s in clean_text.split(".") if len(s.strip()) > 8]
+
+                            # 1. Executive Summary
+                            st.markdown("### 📝 Executive Overview")
+                            if len(sentences) >= 2:
+                                st.info(". ".join(sentences[:3]) + ".")
+                            else:
+                                st.info(content_to_summarize)
+
+                            # 2. Key Highlights / Bullet Points
+                            st.markdown("### 🎯 Key Highlights & Points")
+                            if len(sentences) > 3:
+                                for point in sentences[3:8]:
+                                    st.markdown(f"• {point}.")
+                            else:
+                                st.markdown(f"• {content_to_summarize}")
+
+                            # 3. Source Reference
+                            with st.expander("📖 View Original Source Text"):
+                                st.write(full_text)
+
                     except Exception as e:
-                        st.error(f"❌ Error: {e}")
+                        st.error(f"❌ Error generating summary: {e}")

@@ -17,7 +17,12 @@ st.set_page_config(
 # Custom Premium Styling & Sidebar Enhancements
 st.markdown("""
     <style>
-    /* 1. Profile Pill next to 3-dots Menu */
+    /* Theme Adaptable Root Settings */
+    .stApp {
+        transition: all 0.3s ease;
+    }
+
+    /* 1. Top-Right Profile Pill next to 3-dots Menu */
     .user-pill {
         position: fixed !important;
         top: 10px !important;
@@ -26,36 +31,37 @@ st.markdown("""
         display: flex !important;
         align-items: center !important;
         gap: 8px !important;
-        background: #1e293b !important;
+        background: rgba(30, 41, 59, 0.95) !important;
         border: 1px solid #3b82f6 !important;
         padding: 5px 14px !important;
         border-radius: 20px !important;
         color: #93c5fa !important;
         font-weight: 600 !important;
         font-size: 0.9rem !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.5) !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.4) !important;
     }
 
-    /* 2. Sidebar Navigation Spacing & Bigger Font (Streamlit v1.63 Support) */
+    /* 2. Sidebar Navigation Cards (Dual Theme: Works on both Light & Dark) */
     [data-testid="stSidebar"] [role="radiogroup"] > label,
     [data-testid="stSidebar"] .stRadio > div > label,
     section[data-testid="stSidebar"] label {
         font-size: 1.15rem !important;
         font-weight: 500 !important;
-        margin-bottom: 18px !important; /* ఐటమ్స్ మధ్య దూరం */
+        margin-bottom: 14px !important;
         padding: 12px 16px !important;
-        border-radius: 10px !important;
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+        background: rgba(125, 140, 170, 0.12) !important;
+        border: 1px solid rgba(125, 140, 170, 0.25) !important;
         display: flex !important;
+        align-items: center !important;
         cursor: pointer !important;
-        transition: all 0.2s ease !important;
+        transition: all 0.25s ease-in-out !important;
     }
 
-    /* Text inside the sidebar options */
+    /* Text inside navigation cards */
     [data-testid="stSidebar"] [role="radiogroup"] p,
     [data-testid="stSidebar"] .stRadio p {
-        font-size: 1.15rem !important;
+        font-size: 1.12rem !important;
         font-weight: 600 !important;
     }
 
@@ -65,6 +71,38 @@ st.markdown("""
         border-color: #3b82f6 !important;
         background: rgba(59, 130, 246, 0.15) !important;
         transform: translateX(4px) !important;
+    }
+
+    /* Active Selected Option - Vibrant Highlight with White Text */
+    [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked),
+    section[data-testid="stSidebar"] label:has(input:checked) {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+    }
+
+    [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p,
+    section[data-testid="stSidebar"] label:has(input:checked) p {
+        color: #ffffff !important;
+    }
+
+    /* 3. Logout Button - Prominent Blue Accent */
+    div[data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        padding: 10px 16px !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stSidebar"] .stButton > button:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5) !important;
+        transform: translateY(-1px) !important;
     }
     </style>
 """, unsafe_allow_html=True)

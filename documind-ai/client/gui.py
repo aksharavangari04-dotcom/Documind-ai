@@ -398,9 +398,6 @@ def open_upload():
 # -------------------------------------------------------------------
 # 5. SUMMARIZE DOCUMENT WINDOW
 # -------------------------------------------------------------------
-# -------------------------------------------------------------------
-# 5. SUMMARIZE DOCUMENT WINDOW (Smart Fallback Fix)
-# -------------------------------------------------------------------
 def open_summarize():
     sum_window = tk.Toplevel(window)
     sum_window.title("Summarize Document")
@@ -618,15 +615,11 @@ def login():
     tk.Label(card, text="Phone Number", font=("DejaVu Sans", 11, "bold"), bg=CARD_BG, fg=TEXT_MUTED).pack(anchor="w")
     phone_entry = tk.Entry(card, width=30, font=("DejaVu Sans", 12), bg=BG_DARK, fg=TEXT_MAIN, insertbackground="white", bd=1, relief="solid")
     phone_entry.pack(pady=(6, 15), ipady=6)
+    phone_entry.insert(0, "+91")
 
     tk.Label(card, text="Password", font=("DejaVu Sans", 11, "bold"), bg=CARD_BG, fg=TEXT_MUTED).pack(anchor="w")
     password_entry = tk.Entry(card, width=30, show="*", font=("DejaVu Sans", 12), bg=BG_DARK, fg=TEXT_MAIN, insertbackground="white", bd=1, relief="solid")
     password_entry.pack(pady=(6, 25), ipady=6)
-
-    session = load_session()
-    if session:
-        phone_entry.insert(0, session.get("phone", ""))
-        password_entry.insert(0, session.get("password", ""))
 
     def submit_login():
         phone = phone_entry.get().strip()

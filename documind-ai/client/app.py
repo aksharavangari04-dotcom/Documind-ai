@@ -314,31 +314,37 @@ else:
                                 st.metric("Character Count", f"{len(full_content)} chars")
 
                             st.markdown("---")
-                            # Document Details Card
+                            
+                            # 1. Document Details Card
                             st.markdown(f"""
-                                <div style="background: rgba(30, 41, 59, 0.6); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
+                                <div style="background: rgba(30, 41, 59, 0.6); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.2rem;">
                                     <h4 style="margin:0; color:#60a5fa;">📄 {doc.get('title', 'Untitled Document')}</h4>
-                                    <p style="margin:5px 0; color:#94a3b8; font-size:0.9rem;"><b>File:</b> {doc.get('file_name', 'N/A')} | <b>Uploaded:</b> {doc.get('created_at', 'N/A')[:10] if doc.get('created_at') else 'N/A'}</p>
+                                    <p style="margin:6px 0; color:#94a3b8; font-size:0.9rem;"><b>File:</b> {doc.get('file_name', 'N/A')} | <b>Uploaded:</b> {str(doc.get('created_at', 'N/A'))[:10]}</p>
                                     <p style="margin:0; color:#94a3b8; font-size:0.9rem;"><b>Language:</b> {doc.get('language', 'Telugu')} | <b>Status:</b> <span style="color:#10b981;">● {doc.get('status', 'uploaded')}</span></p>
                                 </div>
                             """, unsafe_allow_html=True)
 
-                            # Check if text has an external cloud file
+                            # 2. Fetch Real Content from Cloud Storage URL
+                            real_content = full_content
                             file_url = doc.get("file_url")
+
                             if file_url and ("http" in str(file_url)):
-                                st.info("🌐 ఈ డాక్యుమెంట్ పూర్తి ఫైల్ క్లౌడ్ స్టోరేజ్‌లో ఉంది.")
-                                st.markdown(f"[📥 పూర్తి ఒరిజినల్ ఫైల్ డౌన్‌లోడ్ చేయండి / చూడండి]({file_url})")
+                                try:
+                                    file_resp = requests.get(file_url, timeout=5)
+                                    if file_resp.status_code == 200 and len(file_resp.text.strip()) > 5:
+                                        real_content = file_resp.text
+                                except Exception:
+                                    pass
 
+                            # 3. Single Clean Full Content Area
                             st.markdown("### 📑 Full Document Content")
-                            st.text_area("Content", value=full_content, height=260, disabled=True)
-                            
-                            # Display in an expanded readable text box
                             st.text_area(
-                                label="Document Body",
-                                value=full_content,
-                                height=380
+                                label="Original Text Matter",
+                                value=real_content,
+                                height=320,
+                                disabled=True
                             )
-
+                            
                             # Raw JSON details dropdown for inspection
                             with st.expander("🔍 Inspect Full Corpus API Metadata"):
                                 st.json(doc)

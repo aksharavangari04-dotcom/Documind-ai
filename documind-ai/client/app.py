@@ -303,47 +303,40 @@ else:
                             st.subheader(f"📖 {title_val}")
                             st.caption(f"Record Identifier: `{rec_id.strip()}`")
 
-                            # Metadata Summary Cards
+                            # Quick Minimal Metadata
+                            file_url = str(doc.get("file_url") or "")
+                            media_type = str(doc.get("media_type") or "").lower()
+                            is_audio = "audio" in media_type or any(ext in file_url.lower() for ext in [".webm", ".wav", ".mp3", ".ogg", ".m4a"])
+
                             col1, col2, col3 = st.columns(3)
                             with col1:
-                                st.metric("Language / Category", doc.get("language") or doc.get("category") or "Telugu / Indic")
+                                st.metric("Language", doc.get("language") or "Telugu / Indic")
                             with col2:
-                                word_count = len(full_content.split()) if full_content else 0
-                                st.metric("Word Count", f"{word_count} words")
+                                st.metric("Word Count", f"{len(full_content.split()) if full_content else 0} words")
                             with col3:
-                                st.metric("Character Count", f"{len(full_content)} chars")
+                                st.metric("Type", "🎵 Audio" if is_audio else "📄 Text")
 
                             st.markdown("---")
-                            
-                            # 1. Document Details Card
-                            st.markdown(f"""
-                                <div style="background: rgba(30, 41, 59, 0.6); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.2rem;">
-                                    <h4 style="margin:0; color:#60a5fa;">📄 {doc.get('title', 'Untitled Document')}</h4>
-                                    <p style="margin:6px 0; color:#94a3b8; font-size:0.9rem;"><b>File:</b> {doc.get('file_name', 'N/A')} | <b>Uploaded:</b> {str(doc.get('created_at', 'N/A'))[:10]}</p>
-                                    <p style="margin:0; color:#94a3b8; font-size:0.9rem;"><b>Language:</b> {doc.get('language', 'Telugu')} | <b>Status:</b> <span style="color:#10b981;">● {doc.get('status', 'uploaded')}</span></p>
-                                </div>
-                            """, unsafe_allow_html=True)
 
-                            # 2. Fetch Real Content from Cloud Storage URL
-                            real_content = full_content
-                            file_url = doc.get("file_url")
+                            # Audio Player (If Audio File)
+                            if is_audio and file_url.startswith("http"):
+                                st.markdown("#### 🎵 Recorded Audio")
+                                st.audio(file_url)
 
-                            if file_url and ("http" in str(file_url)):
-                                try:
-                                    file_resp = requests.get(file_url, timeout=5)
-                                    if file_resp.status_code == 200 and len(file_resp.text.strip()) > 5:
-                                        real_content = file_resp.text
-                                except Exception:
-                                    pass
+                            # Complete Content / Audio Transcription Text Area
+                            st.markdown("#### 📑 Content / Transcription")
+                            if full_content and len(full_content.strip()) > 0:
+                                st.text_area(
+                                    label="Extracted Text",
+                                    value=full_content,
+                                    height=200,
+                                    disabled=True
+                                )
+                            else:
+                                st.info("ℹ️ No extracted transcription text available for this record.")
 
-                            # 3. Single Clean Full Content Area
-                            st.markdown("### 📑 Full Document Content")
-                            st.text_area(
-                                label="Original Text Matter",
-                                value=real_content,
-                                height=320,
-                                disabled=True
-                            )
+                            if file_url.startswith("http"):
+                                st.markdown(f"🔗 [Download Original File]({file_url})")
                             
                             # Raw JSON details dropdown for inspection
                             with st.expander("🔍 Inspect Full Corpus API Metadata"):

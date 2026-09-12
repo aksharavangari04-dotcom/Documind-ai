@@ -84,7 +84,7 @@ def extract_complete_text(data):
             pass
 
     if isinstance(data, dict):
-        # 1. Audio ASR segments ఉంటే అన్ని పదాలను ఒకే పేరాగా కలపడం
+        
         extracted_obj = data.get("extracted_text")
         if isinstance(extracted_obj, dict):
             segments = extracted_obj.get("segments", [])
@@ -95,7 +95,6 @@ def extract_complete_text(data):
             if extracted_obj.get("text"):
                 return extracted_obj.get("text")
 
-        # 2. సాధారణ డాక్యుమెంట్ల టెక్స్ట్ ఫీల్డ్స్
         priority_keys = ["raw_text", "transcription", "full_text", "text", "content", "body", "description"]
         for key in priority_keys:
             val = data.get(key)
@@ -131,7 +130,7 @@ if not st.session_state["authenticated"]:
         login_phone = st.text_input("Phone Number", value="+91", key="login_phone")
         login_password = st.text_input("Password", type="password", key="login_password")
 
-        if st.button("Login to Dashboard", use_container_width=True):
+        if st.button("Login", use_container_width=True):
             if not login_phone or not login_password:
                 st.error("Please enter phone number and password.")
             else:
@@ -315,7 +314,23 @@ else:
                                 st.metric("Character Count", f"{len(full_content)} chars")
 
                             st.markdown("---")
-                            st.markdown("### 📄 Complete Document Content")
+                            # Document Details Card
+                            st.markdown(f"""
+                                <div style="background: rgba(30, 41, 59, 0.6); padding: 1.2rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
+                                    <h4 style="margin:0; color:#60a5fa;">📄 {doc.get('title', 'Untitled Document')}</h4>
+                                    <p style="margin:5px 0; color:#94a3b8; font-size:0.9rem;"><b>File:</b> {doc.get('file_name', 'N/A')} | <b>Uploaded:</b> {doc.get('created_at', 'N/A')[:10] if doc.get('created_at') else 'N/A'}</p>
+                                    <p style="margin:0; color:#94a3b8; font-size:0.9rem;"><b>Language:</b> {doc.get('language', 'Telugu')} | <b>Status:</b> <span style="color:#10b981;">● {doc.get('status', 'uploaded')}</span></p>
+                                </div>
+                            """, unsafe_allow_html=True)
+
+                            # Check if text has an external cloud file
+                            file_url = doc.get("file_url")
+                            if file_url and ("http" in str(file_url)):
+                                st.info("🌐 ఈ డాక్యుమెంట్ పూర్తి ఫైల్ క్లౌడ్ స్టోరేజ్‌లో ఉంది.")
+                                st.markdown(f"[📥 పూర్తి ఒరిజినల్ ఫైల్ డౌన్‌లోడ్ చేయండి / చూడండి]({file_url})")
+
+                            st.markdown("### 📑 Full Document Content")
+                            st.text_area("Content", value=full_content, height=260, disabled=True)
                             
                             # Display in an expanded readable text box
                             st.text_area(

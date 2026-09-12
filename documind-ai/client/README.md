@@ -1,57 +1,41 @@
-<div align="center">
+# 🧠 DocuMind AI
 
-  <h1>🧠 DocuMind AI</h1>
-  <p><strong>Intelligent Corpus Assistant for Indic Document Processing & Search</strong></p>
+### Intelligent Corpus Web Assistant for Indic Document Processing & Search
 
-  [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-  [![Tkinter](https://img.shields.io/badge/GUI-Tkinter-FF6F00?style=for-the-badge)](https://docs.python.org/3/library/tkinter.html)
-  [![uv](https://img.shields.io/badge/Package_Manager-uv-DE5D83?style=for-the-badge)](https://github.com/astral-sh/uv)
-  [![API](https://img.shields.io/badge/API-Indic_Corpus_v1-008080?style=for-the-badge)](https://code.swecha.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Framework](https://img.shields.io/badge/Framework-Streamlit-FF4B4B.svg)](https://streamlit.io/)
+[![Deployment](https://img.shields.io/badge/Deployed%20on-Render-46E3B7.svg)](https://render.com/)
+[![API](https://img.shields.io/badge/API-Indic%20Corpus%20v1-0284c7.svg)](#)
 
-  <br />
-
-  <p align="center">
-    A desktop assistant built with Python and Tkinter that interacts directly with the <strong>Indic Corpus Collections API</strong>. <br />
-    Effortlessly search, inspect, summarize, and ingest unstructured documents through a fast dark-themed interface.
-  </p>
-
-</div>
+DocuMind AI is a full-stack, cloud-deployed web dashboard built with **Streamlit** and Python. It directly integrates with the **Indic Corpus Collections API** to allow real-time document search, structured multi-modal content inspection, audio playback/transcription, AI-assisted summaries, and file uploads within a polished, dual-theme UI.
 
 ---
 
-## 📌 About The Project
+## 📌 Features at a Glance
 
-**DocuMind AI** simplifies working with large document repositories by providing a desktop dashboard for text search, AI-assisted summarization, document ingestion, and dynamic dataset category exploration. It enforces secure token-based user authentication with local session persistence so you stay logged in seamlessly.
-
----
-
-## ✨ Features At A Glance
-
-| Feature | Description | API Endpoint |
+| Feature | Description | API / Service |
 | :--- | :--- | :--- |
-| **🔐 Secure Auth** | Access token generation & local session persistence (`session.json`) | `POST /api/v1/auth/login` |
-| **🔍 Real-Time Search** | Query document corpus by keyword with quick-copy capabilities | `GET /api/v1/records/search` |
-| **📄 Record Inspection** | Fetch detailed text content, ASR output, and record metadata | `GET /api/v1/records/{id}` |
-| **📂 Category Browser** | Dynamically browse available corpus categories | `GET /api/v1/categories/` |
-| **📤 File Ingestion** | Upload local text documents with live chunk-streaming logs | `POST /api/v1/records/upload` |
-| **📝 Smart Summarizer** | Generate executive summaries and text extractions on demand | `GET /api/v1/records/{id}/extracted_text` |
-| **🎨 Dark Slate UI** | Modern dark-mode interface built natively in Python Tkinter | Desktop Native |
+| 🔐 **Secure Authentication** | Phone & password login/registration with persistent session management. | `POST /api/v1/auth/login` |
+| 🔍 **Corpus Search** | Fast query-based search across corpus documents with keyword matching. | `GET /api/v1/records/search` |
+| 📂 **Category Explorer** | Dynamic category navigation and dataset browsing. | `GET /api/v1/categories/` |
+| 📑 **Multi-Modal Inspection** | Unified record viewer handling text, cloud file URLs, and streaming audio playback. | `GET /api/v1/records/{id}` |
+| 💡 **AI Document Summarizer** | Extracts executive summaries, key metadata metrics, and source context. | `POST /api/v1/summarize` |
+| 📤 **Corpus File Ingestion** | Upload unstructured documents directly to the Indic Corpus platform. | `POST /api/v1/records/upload` |
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-* **Frontend:** Python (`tkinter`, `tkinter.ttk`)
-* **HTTP Client:** `requests`
-* **Session Persistence:** Local JSON session storage (`session.py`)
-* **Package Manager:** [`uv`](https://github.com/astral-sh/uv)
-* **Backend API:** Indic Corpus Collections API (`/api/v1`)
+* **Frontend:** Streamlit, Custom Responsive CSS (Dual-Theme & Glassmorphism)
+* **Backend Integration:** RESTful Indic Corpus Collections API (`requests`)
+* **Session Management:** Secure token storage with local session persistence (`session.py`)
+* **Deployment:** Cloud-hosted containerized web service on Render
 
 ---
 
-## 💻 Quick Start & Installation
+## 🚀 Quick Start & Local Setup
 
-### 1. Clone Repository
+### 1. Clone the Repository
 ```bash
 git clone [https://code.swecha.org/akshara.vangari/akshara.vangari.git](https://code.swecha.org/akshara.vangari/akshara.vangari.git)
 cd akshara.vangari/documind-ai/client

@@ -22,31 +22,36 @@ st.markdown("""
         transition: background-color 0.3s ease;
     }
 
-    /* Sidebar Radio Navigation Items - Big, Attractive Cards */
+    /* Sidebar Radio Navigation Items - Bigger Font & More Spacing */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label {
         background: rgba(120, 140, 180, 0.12) !important;
         border: 1px solid rgba(120, 140, 180, 0.25) !important;
         border-radius: 12px !important;
-        padding: 10px 14px !important;
-        margin-bottom: 8px !important;
+        padding: 14px 18px !important;
+        margin-bottom: 16px !important; /* ఐటమ్స్ మధ్య మంచి స్పేసింగ్ */
         display: flex !important;
         align-items: center !important;
         cursor: pointer !important;
-        transition: all 0.2s ease-in-out !important;
+        transition: all 0.25s ease-in-out !important;
+    }
+
+    /* Bigger Text Inside Sidebar Radio */
+    div[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
     }
 
     div[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
         border-color: #3b82f6 !important;
-        transform: translateX(4px) !important;
+        transform: translateX(6px) !important;
     }
 
     /* Active Selected Radio Option */
     div[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
         background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
         color: white !important;
-        font-weight: 600 !important;
         border-color: #60a5fa !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4) !important;
     }
 
     /* Top-right Profile Pill */
@@ -198,12 +203,7 @@ else:
     st.sidebar.caption("Connected to Indic Corpus API")
 
     user_info = st.session_state.get("username") or st.session_state.get("phone") or "User"
-    col_dash, col_profile = st.columns([3, 1])
-    with col_dash:
-        st.markdown("<h2 style='margin:0; color:#60a5fa;'>🧠 DocuMind AI</h2>", unsafe_allow_html=True)
-    with col_profile:
-        st.markdown(f"<div class='user-pill'>👤 {user_info} <span style='color:#10b981;'>●</span></div>", unsafe_allow_html=True)
-    st.markdown("<div style='height: 15px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='user-pill'>👤 {user_info} <span style='color:#10b981;'>●</span></div>", unsafe_allow_html=True)
     
     menu_choice = st.sidebar.radio(
         "Navigation",

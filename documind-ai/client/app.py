@@ -17,65 +17,54 @@ st.set_page_config(
 # Custom Premium Styling & Sidebar Enhancements
 st.markdown("""
     <style>
-    /* Theme Adaptable Container */
-    .stApp {
-        transition: background-color 0.3s ease;
-    }
-
-    /* Sidebar Radio Navigation Items - Bigger Font & More Spacing */
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background: rgba(120, 140, 180, 0.12) !important;
-        border: 1px solid rgba(120, 140, 180, 0.25) !important;
-        border-radius: 12px !important;
-        padding: 14px 18px !important;
-        margin-bottom: 16px !important; /* ఐటమ్స్ మధ్య మంచి స్పేసింగ్ */
+    /* 1. Profile Pill next to 3-dots Menu */
+    .user-pill {
+        position: fixed !important;
+        top: 10px !important;
+        right: 60px !important;
+        z-index: 999999999 !important;
         display: flex !important;
         align-items: center !important;
-        cursor: pointer !important;
-        transition: all 0.25s ease-in-out !important;
+        gap: 8px !important;
+        background: #1e293b !important;
+        border: 1px solid #3b82f6 !important;
+        padding: 5px 14px !important;
+        border-radius: 20px !important;
+        color: #93c5fa !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.5) !important;
     }
 
-    /* Bigger Text Inside Sidebar Radio */
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+    /* 2. Sidebar Navigation Spacing & Bigger Font (Streamlit v1.63 Support) */
+    [data-testid="stSidebar"] [role="radiogroup"] > label,
+    [data-testid="stSidebar"] .stRadio > div > label,
+    section[data-testid="stSidebar"] label {
+        font-size: 1.15rem !important;
+        font-weight: 500 !important;
+        margin-bottom: 18px !important; /* ఐటమ్స్ మధ్య దూరం */
+        padding: 12px 16px !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        display: flex !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Text inside the sidebar options */
+    [data-testid="stSidebar"] [role="radiogroup"] p,
+    [data-testid="stSidebar"] .stRadio p {
         font-size: 1.15rem !important;
         font-weight: 600 !important;
     }
 
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+    /* Hover effect */
+    [data-testid="stSidebar"] [role="radiogroup"] > label:hover,
+    section[data-testid="stSidebar"] label:hover {
         border-color: #3b82f6 !important;
-        transform: translateX(6px) !important;
-    }
-
-    /* Active Selected Radio Option */
-    div[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
-        background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
-        color: white !important;
-        border-color: #60a5fa !important;
-        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4) !important;
-    }
-
-    /* Top-right Profile Pill */
-    .user-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(37, 99, 235, 0.15);
-        border: 1px solid #3b82f6;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 0.88rem;
-        float: right;
-    }
-
-    /* Primary Action Buttons */
-    .stButton>button {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-        color: white !important;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        border: none !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+        background: rgba(59, 130, 246, 0.15) !important;
+        transform: translateX(4px) !important;
     }
     </style>
 """, unsafe_allow_html=True)

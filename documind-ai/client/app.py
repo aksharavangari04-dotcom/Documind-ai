@@ -17,71 +17,60 @@ st.set_page_config(
 # Custom Premium Styling & Sidebar Enhancements
 st.markdown("""
     <style>
-    /* Dark Radial Background */
+    /* Theme Adaptable Container */
     .stApp {
-        background: radial-gradient(circle at 10% 10%, #1e293b 0%, #0b0f19 100%) !important;
-        color: #F8FAFC !important;
-        font-family: 'Inter', sans-serif;
-    }
-    
-    /* Luxury Glassmorphism Sidebar */
-    section[data-testid="stSidebar"] {
-        background: #090d16 !important;
-        border-right: 1px solid #1e293b !important;
-        padding-top: 1rem !important;
+        transition: background-color 0.3s ease;
     }
 
     /* Sidebar Radio Navigation Items - Big, Attractive Cards */
-    div[data-testid="stSidebar"] div[role="radiogroup"] label {
-        background: #131b2e !important;
-        border: 1px solid #1e293b !important;
+    div[data-testid="stSidebar"] div[role="radiogroup"] > label {
+        background: rgba(120, 140, 180, 0.12) !important;
+        border: 1px solid rgba(120, 140, 180, 0.25) !important;
         border-radius: 12px !important;
-        padding: 12px 16px !important;
-        margin-bottom: 10px !important;
-        font-size: 1.05rem !important;
-        font-weight: 500 !important;
-        transition: all 0.25s ease !important;
+        padding: 10px 14px !important;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        align-items: center !important;
         cursor: pointer !important;
+        transition: all 0.2s ease-in-out !important;
     }
 
-    div[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-        background: #1e293b !important;
+    div[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
         border-color: #3b82f6 !important;
-        transform: translateX(4px);
+        transform: translateX(4px) !important;
     }
 
-    /* Active Selected Radio Item */
-    div[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] {
-        background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%) !important;
-        border-color: #60a5fa !important;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
-    }
-
-    /* Action Buttons */
-    .stButton>button {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    /* Active Selected Radio Option */
+    div[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
+        background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%) !important;
         color: white !important;
         font-weight: 600 !important;
-        border-radius: 10px !important;
-        padding: 0.65rem 1.4rem !important;
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
-        border: none !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
     }
 
-    /* User Profile Pill at Top Right */
+    /* Top-right Profile Pill */
     .user-pill {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #1e293b;
+        background: rgba(37, 99, 235, 0.15);
         border: 1px solid #3b82f6;
         padding: 6px 14px;
-        border-radius: 25px;
-        color: #93c5fd;
+        border-radius: 20px;
         font-weight: 600;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        font-size: 0.88rem;
         float: right;
+    }
+
+    /* Primary Action Buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -157,6 +146,8 @@ if not st.session_state["authenticated"]:
                     if res.status_code == 200:
                         data = res.json()
                         token = data.get("access_token", "")
+                        st.session_state["phone"] = login_phone.strip()
+                        st.session_state["username"] = data.get("username", login_phone.strip())
                         session_data = {
                             "phone": login_phone.strip(),
                             "password": login_password,
@@ -206,7 +197,7 @@ else:
     st.sidebar.title("🧠 DocuMind AI")
     st.sidebar.caption("Connected to Indic Corpus API")
 
-    user_info = st.session_state.get("username") or (st.session_state.get("token")[:10] if st.session_state.get("token") else "Active User")
+    user_info = st.session_state.get("username") or (st.session_state.get("phone") or "User"
     col_dash, col_profile = st.columns([3, 1])
     with col_dash:
         st.markdown("<h2 style='margin:0; color:#60a5fa;'>🧠 DocuMind AI</h2>", unsafe_allow_html=True)

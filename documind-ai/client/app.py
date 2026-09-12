@@ -14,15 +14,56 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Premium Styling & Sidebar Enhancements
+# Custom Premium Styling & Dual-Theme Enhancements
 st.markdown("""
     <style>
-    /* Theme Adaptable Root Settings */
-    .stApp {
-        transition: all 0.3s ease;
+    /* 1. Global Buttons (Login, Logout, Search, Actions) - Dual Theme Blue */
+    .stButton > button,
+    div[data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid #3b82f6 !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        padding: 10px 18px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+        transition: all 0.25s ease-in-out !important;
     }
 
-    /* 1. Top-Right Profile Pill next to 3-dots Menu */
+    .stButton > button:hover,
+    div[data-testid="stSidebar"] .stButton > button:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* 2. Modern Login Card Container */
+    div[data-testid="stVerticalBlock"] > div:has(input[type="password"]) {
+        background: rgba(125, 140, 170, 0.08);
+        border: 1px solid rgba(125, 140, 170, 0.22);
+        padding: 2.2rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(10px);
+        margin-top: 1rem;
+    }
+
+    /* Input Field Polishing */
+    .stTextInput input {
+        border-radius: 10px !important;
+        border: 1px solid rgba(125, 140, 170, 0.3) !important;
+        padding: 10px 14px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .stTextInput input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+    }
+
+    /* 3. Top-Right Profile Pill */
     .user-pill {
         position: fixed !important;
         top: 10px !important;
@@ -38,10 +79,10 @@ st.markdown("""
         color: #93c5fa !important;
         font-weight: 600 !important;
         font-size: 0.9rem !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.4) !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
     }
 
-    /* 2. Sidebar Navigation Cards (Dual Theme: Works on both Light & Dark) */
+    /* 4. Sidebar Navigation Cards (Works across Light & Dark themes) */
     [data-testid="stSidebar"] [role="radiogroup"] > label,
     [data-testid="stSidebar"] .stRadio > div > label,
     section[data-testid="stSidebar"] label {
@@ -58,22 +99,13 @@ st.markdown("""
         transition: all 0.25s ease-in-out !important;
     }
 
-    /* Text inside navigation cards */
     [data-testid="stSidebar"] [role="radiogroup"] p,
     [data-testid="stSidebar"] .stRadio p {
         font-size: 1.12rem !important;
         font-weight: 600 !important;
     }
 
-    /* Hover effect */
-    [data-testid="stSidebar"] [role="radiogroup"] > label:hover,
-    section[data-testid="stSidebar"] label:hover {
-        border-color: #3b82f6 !important;
-        background: rgba(59, 130, 246, 0.15) !important;
-        transform: translateX(4px) !important;
-    }
-
-    /* Active Selected Option - Vibrant Highlight with White Text */
+    /* Active Highlighted Sidebar Item */
     [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked),
     section[data-testid="stSidebar"] label:has(input:checked) {
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
@@ -84,25 +116,6 @@ st.markdown("""
     [data-testid="stSidebar"] [role="radiogroup"] > label:has(input:checked) p,
     section[data-testid="stSidebar"] label:has(input:checked) p {
         color: #ffffff !important;
-    }
-
-    /* 3. Logout Button - Prominent Blue Accent */
-    div[data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        padding: 10px 16px !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
-        transition: all 0.2s ease !important;
-    }
-
-    div[data-testid="stSidebar"] .stButton > button:hover {
-        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5) !important;
-        transform: translateY(-1px) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -155,7 +168,7 @@ client = st.session_state["client"]
 # AUTHENTICATION SCREEN (Login & Registration)
 # -------------------------------------------------------------------
 if not st.session_state["authenticated"]:
-    left_col, center_col, right_col = st.columns([1, 1.3, 1])
+    left_col, center_col, right_col = st.columns([1, 1.1, 1])
 
     with center_col:
         st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
@@ -164,10 +177,15 @@ if not st.session_state["authenticated"]:
         auth_tab1, auth_tab2 = st.tabs(["🔑 Login", "📝 Create Account"])
         
     with auth_tab1:
-        st.subheader("User Authentication")
+        st.markdown("""
+            <div style="background: rgba(125, 140, 180, 0.1); border: 1px solid rgba(125, 140, 180, 0.25); padding: 1.5rem; border-radius: 14px; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
+                <h3 style="margin-top:0; text-align:center;">🔐 Sign In to DocuMind</h3>
+                <p style="text-align:center; color:gray; font-size:0.85rem; margin-bottom: 1rem;">Access your connected corpus documents</p>
+            </div>
+        """, unsafe_allow_html=True)
         login_phone = st.text_input("Phone Number", value="+91", key="login_phone")
         login_password = st.text_input("Password", type="password", key="login_password")
-
+        
         if st.button("Login", use_container_width=True):
             if not login_phone or not login_password:
                 st.error("Please enter phone number and password.")
@@ -199,7 +217,12 @@ if not st.session_state["authenticated"]:
                     st.error(f"Connection Error: {e}")
 
     with auth_tab2:
-        st.subheader("Create Account")
+        st.markdown("""
+            <div style="background: rgba(125, 140, 180, 0.1); border: 1px solid rgba(125, 140, 180, 0.25); padding: 1.5rem; border-radius: 14px; margin-bottom: 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
+                <h3 style="margin-top:0; text-align:center;">📝 Create New Account</h3>
+                <p style="text-align:center; color:gray; font-size:0.85rem; margin-bottom: 0;">Sign up to start analyzing corpus documents</p>
+            </div>
+        """, unsafe_allow_html=True)
         reg_phone = st.text_input("Phone Number", key="reg_phone")
         reg_pwd = st.text_input("Password", type="password", key="reg_pwd")
         confirm_pwd = st.text_input("Confirm Password", type="password", key="reg_confirm")

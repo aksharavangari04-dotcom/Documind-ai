@@ -197,7 +197,7 @@ else:
     st.sidebar.title("🧠 DocuMind AI")
     st.sidebar.caption("Connected to Indic Corpus API")
 
-    user_info = st.session_state.get("username") or (st.session_state.get("phone") or "User"
+    user_info = st.session_state.get("username") or st.session_state.get("phone") or "User"
     col_dash, col_profile = st.columns([3, 1])
     with col_dash:
         st.markdown("<h2 style='margin:0; color:#60a5fa;'>🧠 DocuMind AI</h2>", unsafe_allow_html=True)
